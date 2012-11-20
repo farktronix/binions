@@ -45,7 +45,7 @@ NoLimit = module.exports = (small, big) ->
 
     currentWager: ->
       wagers = @players.map (pos) ->
-        pos.wagered || 0
+        pos.roundWager || 0
       Math.max.apply(Math, wagers)
 
     blinds: ->
@@ -102,17 +102,18 @@ NoLimit = module.exports = (small, big) ->
       else
         player = @players[position]
       amount = parseInt(amount, 10) || 0
-      total = player.wagered + amount
+      total = player.roundWager + amount
+      amount = Math.min(amount, player.chips)
       if player.chips == amount
         player.act(@state, 'allIn', amount)
-      else if @minToCall - player.wagered == 0 && total < @minToRaise
+      else if @minToCall - player.roundWager == 0 && total < @minToRaise
         player.act(@state, 'check', 0, err)
       else if total < @minToCall # Can be -1 to force a fold on check
         player.act(@state, 'fold', 0, err)
       else if total >= @minToRaise
         player.act(@state, 'raise', amount)
       else if total >= @minToCall
-        player.act(@state, 'call', @minToCall - player.wagered) # Prevent incomplete raise unless all-in
+        player.act(@state, 'call', @minToCall - player.roundWager) # Prevent incomplete raise unless all-in
       @analyze()
 
     takeBlinds: ->
@@ -122,7 +123,7 @@ NoLimit = module.exports = (small, big) ->
 
     options: ->
       o = {}
-      o.call = @minToCall - @nextToAct.wagered
-      o.raise = @minToRaise - @nextToAct.wagered
+      o.call = @minToCall - @nextToAct.roundWager
+      o.raise = @minToRaise - @nextToAct.roundWager
       o.canRaise = @canRaise
       o

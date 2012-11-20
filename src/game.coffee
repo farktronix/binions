@@ -41,6 +41,11 @@ Game = class exports.Game extends EventEmitter
         @takeBets()
       else
         @settle()
+        
+  collectWagers: ->
+    for player in @players
+      player.wagered += player.roundWager
+      player.roundWager = 0
 
   # Take bets in order and call roundComplete when finished
   takeBets: (betting, cb) ->
@@ -54,6 +59,7 @@ Game = class exports.Game extends EventEmitter
         betting.bet(res || 0, null, err)
         @takeBets(betting)
     else
+      @collectWagers()
       @emit("roundComplete", @state)
       cb?()
 
@@ -162,7 +168,7 @@ Game = class exports.Game extends EventEmitter
   pot: ->
     t = 0
     for player in @players
-      t = t + player.wagered
+      t = t + player.wagered + player.roundWager
     t
 
   activePlayers: ->

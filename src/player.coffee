@@ -22,6 +22,7 @@ Player = class exports.Player extends EventEmitter
 
   reset: ->
     @wagered = 0
+    @roundWager = 0
     @payout = 0
     @ante = 0
     @blind = 0
@@ -34,7 +35,7 @@ Player = class exports.Player extends EventEmitter
     @state == 'active' || @state == 'allIn'
 
   inPlay: ->
-    @wagered > 0 && @active()
+    (@wagered + @roundWager) > 0 && @active()
 
   canBet: ->
     @chips > 0 && @active()
@@ -42,7 +43,7 @@ Player = class exports.Player extends EventEmitter
   bet: (amount) ->
     if amount > @chips
       amount = @chips
-    @wagered = @wagered + amount
+    @roundWager += amount
     @chips = @chips - amount
     amount
 
@@ -105,6 +106,7 @@ Player = class exports.Player extends EventEmitter
       blind: @blind
       ante: @ante
       wagered: @wagered
+      roundWager: @roundWager
       state: @state
       chips: @chips
       actions: @_actions || []
